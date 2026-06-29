@@ -119,13 +119,13 @@ input { font: inherit; outline: none; }
 .pool-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
 
 .faction-filters {
-  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+  display: flex; gap: 4px; margin-bottom: 12px;
 }
 .faction-btn {
-  padding: 5px 12px; border-radius: 14px; border: 1px solid var(--border);
+  flex: 1; padding: 5px 4px; border-radius: 14px; border: 1px solid var(--border);
   background: var(--surface2); color: var(--text2);
   font-size: 11px; font-weight: 600; cursor: pointer;
-  transition: all 0.15s; white-space: nowrap;
+  transition: all 0.15s; white-space: nowrap; text-align: center;
 }
 .faction-btn:hover { background: #2a2a4e; color: #fff; }
 .faction-btn.active { background: rgba(108,108,255,0.2); color: #fff; border-color: var(--accent); }
@@ -134,6 +134,23 @@ input { font: inherit; outline: none; }
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
   align-content: flex-start; min-height: 60px;
 }
+
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 8px;
+  padding: 14px; text-align: center; margin-bottom: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--accent); background: rgba(108,108,255,0.06);
+}
+.upload-icon {
+  font-size: 24px; color: var(--text2); line-height: 1; margin-bottom: 4px;
+}
+.upload-hint {
+  font-size: 12px; color: var(--text2); line-height: 1.5;
+}
+
+
 
 /* ========== Character Images ========== */
 .char-img {
@@ -170,6 +187,7 @@ input { font: inherit; outline: none; }
 .ctx-item:hover { background: rgba(108,108,255,0.2); }
 .ctx-item.danger { color: var(--danger); }
 .ctx-item.danger:hover { background: rgba(255,68,102,0.15); }
+#ctxDelete { display: none; }
 
 /* ========== Status ========== */
 .statusbar {
@@ -204,14 +222,20 @@ input { font: inherit; outline: none; }
     </div>
     <div class="pool-scroll">
       <div class="faction-filters" id="filters"></div>
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">+</div>
+        <div class="upload-hint">拖拽图片到此处 或 点击上传<br><span style="font-size:10px;color:var(--text2)">12角色名.png (元素=1，旷野=2，奥术=3，圣堂=4，彼岸=5，幻境=6)</span></div>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
       <div class="pool-grid" id="poolGrid"></div>
     </div>
   </div>
 </div>
 
 <div class="ctx-menu" id="ctxMenu">
-  <div class="ctx-item" data-action="baowu">🔮 宝具</div>
-  <div class="ctx-item danger" data-action="remove">✕ 移除</div>
+  <div class="ctx-item" data-action="baowu" id="ctxBaowu">🔮 宝具</div>
+  <div class="ctx-item danger" data-action="remove" id="ctxRemove">✕ 移除</div>
+  <div class="ctx-item danger" data-action="delete" id="ctxDelete">✕ 删除角色</div>
 </div>
 
 <div class="statusbar" id="statusbar">拖拽角色从右到左，在阶级间拖拽可移动，右键移除</div>
@@ -224,7 +248,7 @@ const FACTION_COLORS = {
 };
 // Each character can belong to multiple factions (encoded in filename digits: 1=元素,2=旷野,3=奥术,4=圣堂,5=彼岸,6=幻境)
 const CHAR_FACTIONS = {
-  "七纱舞娘":["元素","彼岸"],"万蛇之母":["彼岸","幻境"],"乱世魔王":["旷野","圣堂"],
+  "七纱舞娘":["元素","彼岸"],"万蛇之母":["彼岸","幻境"],"乱世魔王":["旷野","奥术"],
   "仲夏夜之梦":["元素","旷野"],"光耀元素":["元素","圣堂"],"六臂蛇魔":["旷野","奥术"],
   "冥府之王":["奥术","彼岸"],"冥界判官":["元素","彼岸"],"凯旋皇女":["圣堂","幻境"],
   "北境女王":["元素","奥术"],"半神巫妖":["元素","彼岸"],"双生鸦灵":["旷野","幻境"],
@@ -248,14 +272,14 @@ const CHAR_FACTIONS = {
   "绯刃剑魂":["旷野","彼岸"],"腐败花蕾":["彼岸","幻境"],"英灵战士":["圣堂","幻境"],
   "英雄导师":["旷野","圣堂"],"英魂统领":["旷野","彼岸"],"蛮力神牛":["旷野","彼岸"],
   "诡计之神":["旷野","彼岸"],"远古魔像":["元素","圣堂"],"野兽之王":["奥术","幻境"],
-  "铁腕执行官":["奥术","幻境"],"铁血统帅":["奥术","幻境"],"赏味萌主":["旷野","彼岸"],
+  "铁胃暴君":["旷野","彼岸"],"铁腕执行官":["奥术","幻境"],"铁血统帅":["奥术","幻境"],
   "锻火龙姫":["元素","旷野"],"雷神":["元素","圣堂"],"霜星射手":["元素","幻境"],
   "青铜神姬":["旷野","奥术"],"魅夜之狩":["元素","奥术"],"鹰之勇者":["奥术","圣堂"],
-  "黑猫女神":["奥术","彼岸"],"众神之王":["圣堂","元素"],"四圣•玄武":["圣堂","奥术"],
+  "黑猫女神":["奥术","彼岸"],
 };
 // Maps character name to exact filename in 阵容/ folder
 const CHAR_FILES = {
-  "七纱舞娘":"15七纱舞娘.png","万蛇之母":"65万蛇之母.png","乱世魔王":"24乱世魔王.png",
+  "七纱舞娘":"15七纱舞娘.png","万蛇之母":"65万蛇之母.png","乱世魔王":"23乱世魔王.png",
   "仲夏夜之梦":"12仲夏夜之梦.png","光耀元素":"41光耀元素.png","六臂蛇魔":"32六臂蛇魔.png",
   "冥府之王":"35冥府之王.png","冥界判官":"51冥界判官.png","凯旋皇女":"46凯旋皇女.png",
   "北境女王":"13北境女王.png","半神巫妖":"51半神巫妖.png","双生鸦灵":"26双生鸦灵.png",
@@ -279,10 +303,10 @@ const CHAR_FILES = {
   "绯刃剑魂":"25绯刃剑魂.png","腐败花蕾":"65腐败花蕾.png","英灵战士":"46英灵战士.png",
   "英雄导师":"42英雄导师.png","英魂统领":"52英魂统领.png","蛮力神牛":"25蛮力神牛.png",
   "诡计之神":"52诡计之神.png","远古魔像":"41远古魔像.png","野兽之王":"36野兽之王.png",
-  "铁腕执行官":"36铁腕执行官.png","铁血统帅":"36铁血统帅.png","赏味萌主":"25赏味萌主.png",
+  "铁胃暴君":"25铁胃暴君.png","铁腕执行官":"36铁腕执行官.png","铁血统帅":"36铁血统帅.png",
   "锻火龙姫":"21锻火龙姫.png","雷神":"14雷神.png","霜星射手":"16霜星射手.png",
   "青铜神姬":"32青铜神姬.png","魅夜之狩":"13魅夜之狩.png","鹰之勇者":"43鹰之勇者.png",
-  "黑猫女神":"53黑猫女神.png","众神之王":"41众神之王.png","四圣•玄武":"43四圣•玄武.png",
+  "黑猫女神":"53黑猫女神.png",
 };
 const DEFAULT_TIERS = [
   { label:"T0", color:"#FF4444" },
@@ -296,6 +320,26 @@ const STORAGE_KEY = "tier_list_editor";
 // State
 let state = { tiers:[], filter:"全部" };
 let baowuMap = {};  // name -> true/false
+let customChars = {}; // name -> { factions:[], imageData:"data:..." }
+
+function loadCustomChars() {
+  try { const raw = localStorage.getItem("tier_custom_chars"); return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
+}
+function saveCustomChars() {
+  try { localStorage.setItem("tier_custom_chars", JSON.stringify(customChars)); } catch(e) {}
+}
+
+function getAllCharNames() {
+  return [...new Set([...Object.keys(CHAR_FACTIONS), ...Object.keys(customChars)])];
+}
+function getCharFactions(name) {
+  return CHAR_FACTIONS[name] || (customChars[name] ? customChars[name].factions : []);
+}
+function getCharImageSrc(name) {
+  return customChars[name] && customChars[name].imageData
+    ? customChars[name].imageData
+    : '阵容/' + (CHAR_FILES[name] || name + '.png');
+}
 let dragData = null;
 let ctxChar = null, ctxTier = null;
 
@@ -313,7 +357,7 @@ const ctxMenu = $('ctxMenu');
 const imgCache = {};
 
 function createCharImg(name) {
-  const factions = CHAR_FACTIONS[name];
+  const factions = getCharFactions(name);
   const primaryFaction = factions[0];
   const img = document.createElement('img');
   img.className = 'char-img';
@@ -322,8 +366,9 @@ function createCharImg(name) {
   img.draggable = true;
   img.title = name;
 
-  img.src = '阵容/' + (CHAR_FILES[name] || name + '.png');
+  img.src = getCharImageSrc(name);
   img.onerror = function() { this.style.display = 'none'; };
+  if (customChars[name]) img.dataset.custom = '1';
 
   img.addEventListener('dragstart', function(e) {
     const src = this.parentElement === poolGrid ? null : findTierIdx(this);
@@ -338,10 +383,10 @@ function createCharImg(name) {
     document.querySelectorAll('.tier-body,.tier-row').forEach(el => el.classList.remove('drag-over'));
   });
   img.addEventListener('contextmenu', function(e) {
-    if (this.parentElement === poolGrid) return;
+    if (this.parentElement === poolGrid && !this.dataset.custom) return;
     e.preventDefault(); e.stopPropagation();
-    ctxChar = name;
-    ctxTier = findTierIdx(this);
+    ctxChar = this.dataset.name;
+    ctxTier = this.parentElement === poolGrid ? null : findTierIdx(this);
     showCtxMenu(e.clientX, e.clientY);
   });
 
@@ -357,7 +402,7 @@ function findTierIdx(img) {
 
 // ===== Initial image creation =====
 function initImages() {
-  for (const name of Object.keys(CHAR_FACTIONS)) {
+  for (const name of getAllCharNames()) {
     createCharImg(name);
   }
 }
@@ -492,13 +537,13 @@ function updatePool() {
   const placed = new Set();
   state.tiers.forEach(t => t.chars.forEach(c => placed.add(c)));
 
-  for (const name of Object.keys(CHAR_FACTIONS)) {
+  for (const name of getAllCharNames()) {
     const img = imgCache[name];
     if (!img) continue;
     if (placed.has(name)) {
       if (img.parentElement === poolGrid) img.remove();
     } else {
-      const show = state.filter === '全部' || CHAR_FACTIONS[name].includes(state.filter);
+      const show = state.filter === '全部' || getCharFactions(name).includes(state.filter);
       img.className = 'char-img in-pool' + (show ? '' : ' hidden');
       if (img.parentElement !== poolGrid) {
         poolGrid.appendChild(img);
@@ -512,15 +557,14 @@ function updateFilters() {
   filtersEl.innerHTML = '';
   const allBtn = document.createElement('button');
   allBtn.className = 'faction-btn' + (state.filter === '全部' ? ' active' : '');
-  allBtn.textContent = '全部 (' + Object.keys(CHAR_FACTIONS).length + ')';
+  allBtn.textContent = '全部';
   allBtn.addEventListener('click', function() { state.filter = '全部'; save(); updatePool(); updateFilters(); });
   filtersEl.appendChild(allBtn);
 
   FACTIONS.forEach(f => {
-    const cnt = Object.keys(CHAR_FACTIONS).filter(n => CHAR_FACTIONS[n].includes(f)).length;
     const btn = document.createElement('button');
     btn.className = 'faction-btn' + (state.filter === f ? ' active' : '');
-    btn.textContent = f + ' (' + cnt + ')';
+    btn.textContent = f;
     btn.style.borderColor = state.filter === f ? FACTION_COLORS[f] : undefined;
     btn.addEventListener('click', function() { state.filter = f; save(); updatePool(); updateFilters(); });
     filtersEl.appendChild(btn);
@@ -530,7 +574,53 @@ function updateFilters() {
 function updateCharCount() {
   let total = 0;
   state.tiers.forEach(t => total += t.chars.length);
-  charCount.textContent = '已分配 ' + total + ' / ' + Object.keys(CHAR_FACTIONS).length + ' 个角色';
+  charCount.textContent = '已分配 ' + total + ' / ' + getAllCharNames().length + ' 个角色';
+}
+
+function parseNameFromFilename(filename) {
+  return filename.replace(/\.[^.]+$/, '').replace(/^\d+/, '') || '未知角色';
+}
+
+function parseFactionsFromFilename(filename) {
+  const match = filename.match(/^(\d+)/);
+  if (!match) return [FACTIONS[0]];
+  const digits = match[1];
+  const factions = [];
+  for (const d of digits) {
+    const idx = parseInt(d) - 1;
+    if (idx >= 0 && idx < FACTIONS.length) {
+      factions.push(FACTIONS[idx]);
+    }
+  }
+  return factions.length > 0 ? [...new Set(factions)] : [FACTIONS[0]];
+}
+
+function handleFileUpload(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    setStatus('请上传图片文件');
+    return;
+  }
+  const fileName = file.name;
+  const name = parseNameFromFilename(fileName);
+  if (!name) { setStatus('无法识别文件名'); return; }
+  if (getCharFactions(name).length > 0) {
+    setStatus('角色 "' + name + '" 已存在');
+    return;
+  }
+  const factions = parseFactionsFromFilename(fileName);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    customChars[name] = { factions, imageData: e.target.result };
+    saveCustomChars();
+    save();
+    createCharImg(name);
+    updatePool();
+    updateFilters();
+    updateCharCount();
+    setStatus('已添加角色: ' + name, true);
+  };
+  reader.onerror = function() { setStatus('读取图片失败'); };
+  reader.readAsDataURL(file);
 }
 
 // ===== Drop Logic =====
@@ -604,6 +694,11 @@ function refreshTierDisplay(idx) {
 
 // ===== Context Menu =====
 function showCtxMenu(x, y) {
+  const isPool = ctxTier === null;
+  const isCustom = isPool && customChars[ctxChar] !== undefined;
+  document.getElementById('ctxBaowu').style.display = isPool ? 'none' : '';
+  document.getElementById('ctxRemove').style.display = isPool ? 'none' : '';
+  document.getElementById('ctxDelete').style.display = isCustom ? 'block' : 'none';
   ctxMenu.style.left = x + 'px';
   ctxMenu.style.top = y + 'px';
   ctxMenu.classList.add('show');
@@ -617,7 +712,7 @@ ctxMenu.addEventListener('click', function(e) {
   const action = e.target.dataset.action;
   if (!action) return;
   ctxMenu.classList.remove('show');
-  if (ctxChar === null || ctxTier === null) return;
+  if (ctxChar === null) return;
   if (action === 'baowu') {
     baowuMap[ctxChar] = !baowuMap[ctxChar];
     save();
@@ -635,6 +730,22 @@ ctxMenu.addEventListener('click', function(e) {
       updateCharCount();
       setStatus('已移除 ' + ctxChar);
     }
+  } else if (action === 'delete') {
+    const img = imgCache[ctxChar];
+    if (img) { img.remove(); delete imgCache[ctxChar]; }
+    delete customChars[ctxChar];
+    // Remove from all tiers if present
+    state.tiers.forEach(t => {
+      const i = t.chars.indexOf(ctxChar);
+      if (i !== -1) t.chars.splice(i, 1);
+    });
+    saveCustomChars();
+    save();
+    buildTierStructure();
+    updatePool();
+    updateFilters();
+    updateCharCount();
+    setStatus('已删除角色: ' + ctxChar);
   }
   ctxChar = null;
   ctxTier = null;
@@ -739,12 +850,30 @@ function init() {
     : DEFAULT_TIERS.map(t => ({ label: t.label, color: t.color, chars: [] }));
   state.filter = (saved && saved.filter) ? saved.filter : '全部';
   baowuMap = (saved && saved.baowu) ? saved.baowu : {};
+  customChars = loadCustomChars();
 
   initImages();
   buildTierStructure();
   updatePool();
   updateFilters();
   updateCharCount();
+  setupUpload();
+}
+
+function setupUpload() {
+  const zone = $('uploadZone');
+  const input = $('fileInput');
+  zone.addEventListener('click', function() { input.click(); });
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault(); this.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
+  });
+  input.addEventListener('change', function() {
+    if (this.files[0]) { handleFileUpload(this.files[0]); this.value = ''; }
+  });
 }
 
 // Events
