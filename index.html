@@ -4,21 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>节奏榜编辑器</title>
+<script src="ass-images.js"></script>
 <style>
 :root {
-  --bg: #0d0d1a;
-  --surface: #16162e;
-  --surface2: #1e1e3a;
-  --border: #2a2a50;
-  --text: #e8e8f0;
-  --text2: #8888aa;
-  --accent: #6c6cff;
-  --danger: #ff4466;
+  --bg: #0d0a07;
+  --surface: #1a1410;
+  --surface2: #241b14;
+  --border: #3a2e22;
+  --text: #f0e8d8;
+  --text2: #a89880;
+  --accent: #d4a84a;
+  --danger: #c8392f;
   font-family: "Microsoft YaHei","PingFang SC",system-ui,sans-serif;
   font-size: 13px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+body {
+  background:
+    radial-gradient(ellipse at 18% 8%, rgba(212,168,74,0.10), transparent 55%),
+    radial-gradient(ellipse at 85% 18%, rgba(200,57,47,0.06), transparent 55%),
+    radial-gradient(ellipse at 50% 96%, rgba(212,168,74,0.07), transparent 60%),
+    radial-gradient(ellipse at 8% 78%, rgba(120,80,40,0.05), transparent 55%),
+    var(--bg);
+  color: var(--text); height: 100vh; overflow: hidden;
+}
 button { font: inherit; border: 0; cursor: pointer; background: none; color: inherit; }
 input { font: inherit; outline: none; }
 
@@ -30,7 +39,7 @@ input { font: inherit; outline: none; }
   padding: 10px 16px; background: var(--surface);
   border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
-.topbar h1 { font-size: 16px; font-weight: 800; margin-right: auto; }
+.topbar h1 { font-size: 16px; font-weight: 800; margin-right: auto; letter-spacing: 2px; }
 .topbar .sub { font-size: 11px; color: var(--text2); }
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -39,9 +48,15 @@ input { font: inherit; outline: none; }
   background: var(--surface2); color: var(--text);
   border: 1px solid var(--border); transition: all 0.15s;
 }
-.btn:hover { background: #2a2a50; border-color: #4a4a7a; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { filter: brightness(1.15); }
+.btn:hover { background: #2a1f17; border-color: #5a4a32; }
+.btn.primary {
+  background: linear-gradient(180deg, #e8be60 0%, #d4a84a 50%, #b8902e 100%);
+  border-color: #d4a84a; color: #1a1410;
+  box-shadow: inset 0 1px 0 rgba(255,235,170,0.6), inset 0 -1px 0 rgba(80,50,10,0.35), 0 1px 3px rgba(0,0,0,0.35);
+  text-shadow: 0 1px 0 rgba(255,235,170,0.3);
+}
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; filter: grayscale(0.5); }
 .btn-sm { height: 24px; padding: 0 8px; font-size: 11px; }
 
 /* ========== Left Side ========== */
@@ -53,16 +68,24 @@ input { font: inherit; outline: none; }
 }
 .tier-scroll::-webkit-scrollbar { width: 6px; }
 .tier-scroll::-webkit-scrollbar-track { background: transparent; }
-.tier-scroll::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+.tier-scroll::-webkit-scrollbar-thumb { background: #3a2e22; border-radius: 3px; }
 
 .tier-row {
   display: flex; align-items: flex-start; gap: 12px;
   margin-bottom: 10px; padding: 10px 14px;
   border-radius: 10px;
   background: var(--surface); border: 1px solid var(--border);
-  transition: border-color 0.2s;
+  box-shadow: inset 0 0 0 1px rgba(212,168,74,0.15);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.tier-row.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(108,108,255,0.3); }
+.tier-row:hover {
+  border-color: rgba(212,168,74,0.45);
+  box-shadow: inset 0 0 0 1px rgba(212,168,74,0.50);
+}
+.tier-row.drag-over {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(212,168,74,0.6), 0 0 0 2px rgba(212,168,74,0.3);
+}
 
 .tier-label-area {
   display: flex; align-items: center; gap: 10px;
@@ -73,9 +96,9 @@ input { font: inherit; outline: none; }
 }
 .tier-name {
   font-weight: 800; font-size: 36px; cursor: pointer; white-space: nowrap;
-  line-height: 1; transition: color 0.15s;
+  line-height: 1; transition: color 0.15s; letter-spacing: 2px;
 }
-.tier-name:hover { color: #fff; }
+.tier-name:hover { color: #f0e8d8; }
 .tier-count {
   font-size: 11px; color: var(--text2); white-space: nowrap; align-self: flex-end;
   margin-bottom: 4px;
@@ -85,7 +108,7 @@ input { font: inherit; outline: none; }
   display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start;
   flex: 1; padding: 2px 0; min-height: 60px;
 }
-.tier-body.drag-over { background: rgba(108,108,255,0.06); border-radius: 6px; }
+.tier-body.drag-over { background: rgba(212,168,74,0.06); border-radius: 6px; }
 .tier-body.empty::after {
   content: "拖入角色到此处"; display: block;
   font-size: 12px; color: var(--text2); padding: 20px 0 0 0;
@@ -101,7 +124,7 @@ input { font: inherit; outline: none; }
   border-radius: 5px; font-size: 14px; color: var(--text2); opacity: 0.4;
   transition: all 0.15s; cursor: pointer;
 }
-.tier-action-btn:hover { opacity: 1; background: rgba(255,255,255,0.08); color: #fff; }
+.tier-action-btn:hover { opacity: 1; background: rgba(240,232,216,0.08); color: #f0e8d8; }
 .tier-action-btn.del:hover { color: var(--danger); }
 
 /* ========== Right Side ========== */
@@ -114,9 +137,9 @@ input { font: inherit; outline: none; }
 }
 .pool-scroll::-webkit-scrollbar { width: 6px; }
 .pool-scroll::-webkit-scrollbar-track { background: transparent; }
-.pool-scroll::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+.pool-scroll::-webkit-scrollbar-thumb { background: #3a2e22; border-radius: 3px; }
 
-.pool-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.pool-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; letter-spacing: 2px; }
 
 .faction-filters {
   display: flex; gap: 4px; margin-bottom: 12px;
@@ -127,8 +150,8 @@ input { font: inherit; outline: none; }
   font-size: 11px; font-weight: 600; cursor: pointer;
   transition: all 0.15s; white-space: nowrap; text-align: center;
 }
-.faction-btn:hover { background: #2a2a4e; color: #fff; }
-.faction-btn.active { background: rgba(108,108,255,0.2); color: #fff; border-color: var(--accent); }
+.faction-btn:hover { background: #2a1f17; color: #f0e8d8; }
+.faction-btn.active { background: rgba(212,168,74,0.2); color: #f0e8d8; border-color: var(--accent); }
 
 .pool-grid {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
@@ -141,7 +164,7 @@ input { font: inherit; outline: none; }
   cursor: pointer; transition: all 0.2s;
 }
 .upload-zone:hover, .upload-zone.drag-over {
-  border-color: var(--accent); background: rgba(108,108,255,0.06);
+  border-color: var(--accent); background: rgba(212,168,74,0.06);
 }
 .upload-icon {
   font-size: 24px; color: var(--text2); line-height: 1; margin-bottom: 4px;
@@ -155,7 +178,7 @@ input { font: inherit; outline: none; }
 /* ========== Character Images ========== */
 .char-img {
   border-radius: 8px; cursor: grab; border: 2px solid transparent;
-  transition: transform 0.15s; background: #1a1a30; display: block;
+  transition: transform 0.15s; background: #1a1410; display: block;
   will-change: transform;
 }
 .char-img:hover { transform: scale(1.06); z-index: 2; }
@@ -175,18 +198,18 @@ input { font: inherit; outline: none; }
 /* ========== Context Menu ========== */
 .ctx-menu {
   position: fixed; z-index: 99999;
-  background: #1c1c3a; border: 1px solid #3a3a5a;
+  background: #1a1410; border: 1px solid #3a2e22;
   border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,0.5);
   padding: 4px 0; min-width: 120px; display: none;
 }
 .ctx-menu.show { display: block; }
 .ctx-item {
   padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer;
-  color: var(--text);
+  color: var(--text); letter-spacing: 1px;
 }
-.ctx-item:hover { background: rgba(108,108,255,0.2); }
+.ctx-item:hover { background: rgba(212,168,74,0.2); }
 .ctx-item.danger { color: var(--danger); }
-.ctx-item.danger:hover { background: rgba(255,68,102,0.15); }
+.ctx-item.danger:hover { background: rgba(200,57,47,0.15); }
 #ctxDelete { display: none; }
 
 /* ========== Status ========== */
@@ -195,7 +218,173 @@ input { font: inherit; outline: none; }
   padding: 0 14px; font-size: 10px; color: var(--text2);
   border-top: 1px solid var(--border); flex-shrink: 0;
 }
-.statusbar.success { color: #69DB7C; }
+.statusbar.success { color: #8aa86a; }
+
+/* ========== 词条封面生成模态框 ========== */
+.modal-mask {
+  position: fixed; inset: 0; z-index: 100000;
+  background: rgba(13,10,7,0.78);
+  backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center;
+}
+.modal-mask.show { display: flex; }
+.modal-card {
+  background: linear-gradient(180deg, #1a1410 0%, #15100a 100%);
+  border: 1px solid #3a2e22;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(212,168,74,0.18);
+  border-radius: 14px;
+  width: 880px; max-width: 96vw; height: auto;
+  display: flex; flex-direction: column;
+}
+.modal-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid #3a2e22;
+  background: linear-gradient(180deg, rgba(212,168,74,0.06), transparent);
+}
+.modal-head h2 { font-size: 16px; font-weight: 800; letter-spacing: 3px; color: #f0e8d8; }
+.modal-head .sub { font-size: 11px; color: #a89880; margin-right: auto; }
+.modal-close {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: #a89880; font-size: 18px; cursor: pointer;
+  transition: all 0.15s;
+}
+.modal-close:hover { background: rgba(212,168,74,0.12); color: #f0e8d8; }
+
+.modal-body { display: flex; flex: 1; min-height: 0; overflow-y: auto; }
+.modal-left {
+  flex: 0 0 380px; padding: 18px 20px;
+  overflow-y: auto; border-right: 1px solid #3a2e22;
+}
+.modal-left::-webkit-scrollbar { width: 6px; }
+.modal-left::-webkit-scrollbar-track { background: transparent; }
+.modal-left::-webkit-scrollbar-thumb { background: #3a2e22; border-radius: 3px; }
+.section-label {
+  font-size: 12px; font-weight: 700; color: #d4a84a;
+  letter-spacing: 3px; margin: 14px 0 10px;
+  padding-bottom: 6px; border-bottom: 1px solid rgba(212,168,74,0.15);
+}
+.section-label:first-child { margin-top: 0; }
+.choice-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.choice-grid.cols-7 { grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.choice-btn {
+  background: #241b14; border: 1px solid #3a2e22; border-radius: 8px;
+  padding: 8px 4px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: all 0.15s;
+  box-shadow: inset 0 0 0 1px rgba(212,168,74,0.08);
+}
+.choice-btn:hover {
+  background: #2a1f17; border-color: rgba(212,168,74,0.5);
+  box-shadow: inset 0 0 0 1px rgba(212,168,74,0.4);
+}
+.choice-btn.active {
+  background: linear-gradient(180deg, rgba(212,168,74,0.25), rgba(212,168,74,0.10));
+  border-color: #d4a84a;
+  box-shadow: inset 0 0 0 1px rgba(212,168,74,0.6), 0 0 0 2px rgba(212,168,74,0.15);
+}
+.choice-btn img { width: 36px; height: 36px; object-fit: contain; }
+.choice-btn.faction img { width: 42px; height: 42px; }
+.choice-btn .lbl { font-size: 11px; color: #f0e8d8; letter-spacing: 1px; }
+.slot-row { display: flex; gap: 8px; margin-top: 6px; }
+.slot-card {
+  flex: 1; background: #15100a; border: 1px dashed #3a2e22; border-radius: 8px;
+  padding: 8px; min-height: 80px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #a89880;
+}
+.slot-card .sl-label { color: #d4a84a; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; font-size: 10px; }
+.slot-card .sl-name { color: #f0e8d8; font-size: 12px; letter-spacing: 1px; }
+.slot-card.filled { border-style: solid; border-color: rgba(212,168,74,0.5); background: rgba(212,168,74,0.05); }
+
+.up-zone {
+  border: 2px dashed #3a2e22; border-radius: 10px;
+  padding: 18px; text-align: center; cursor: pointer;
+  transition: all 0.2s; margin-top: 4px;
+  background: #15100a;
+}
+.up-zone:hover, .up-zone.dragover {
+  border-color: #d4a84a; background: rgba(212,168,74,0.06);
+}
+.up-zone .ic { font-size: 28px; color: #a89880; line-height: 1; }
+.up-zone .ht { font-size: 12px; color: #a89880; margin-top: 4px; letter-spacing: 1px; }
+.up-zone .sm { font-size: 10px; color: #6a5a48; margin-top: 2px; }
+
+.modal-right {
+  flex: 1; padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  min-width: 0;
+}
+.preview-frame {
+  flex: 1; min-height: 380px;
+  background: #0d0a07;
+  border: 1px solid #3a2e22; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background-image:
+    linear-gradient(45deg, #15100a 25%, transparent 25%),
+    linear-gradient(-45deg, #15100a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #15100a 75%),
+    linear-gradient(-45deg, transparent 75%, #15100a 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  position: relative; overflow: hidden;
+}
+.preview-canvas {
+  max-width: 100%; max-height: 100%;
+  image-rendering: -webkit-optimize-contrast;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+.modal-foot {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px; border-top: 1px solid #3a2e22;
+  background: linear-gradient(0deg, rgba(212,168,74,0.04), transparent);
+}
+.modal-foot .hint { font-size: 11px; color: #a89880; margin-right: auto; letter-spacing: 1px; }
+.modal-foot .btn { letter-spacing: 2px; padding: 0 18px; height: 34px; }
+
+/* 封面：角色名输入 */
+.name-input {
+  width: 100%; box-sizing: border-box;
+  background: #15100a; border: 1px solid #3a2e22; border-radius: 8px;
+  color: #f0e8d8; font-size: 13px; padding: 8px 12px;
+  letter-spacing: 1px; outline: none; transition: border-color 0.2s;
+  font-family: inherit;
+}
+.name-input:focus { border-color: #d4a84a; }
+.name-input::placeholder { color: #6a5a48; }
+
+/* 封面：缩放控制 */
+.zoom-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+}
+.zoom-row label { font-size: 11px; color: #a89880; letter-spacing: 1px; white-space: nowrap; }
+.zoom-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px; background: #3a2e22; outline: none;
+}
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #d4a84a; cursor: pointer; border: 2px solid #1a1410;
+}
+.zoom-slider::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #d4a84a; cursor: pointer; border: 2px solid #1a1410;
+}
+.zoom-val { font-size: 11px; color: #d4a84a; min-width: 32px; text-align: right; }
+.reset-btn {
+  font-size: 11px; color: #a89880; cursor: pointer;
+  border: 1px solid #3a2e22; border-radius: 6px; padding: 3px 8px;
+  letter-spacing: 1px; transition: all 0.2s; white-space: nowrap;
+}
+.reset-btn:hover { color: #d4a84a; border-color: #d4a84a; }
+
+/* 封面：canvas 交互光标 */
+.preview-canvas { cursor: grab; }
+.preview-canvas.dragging { cursor: grabbing; }
+.preview-canvas.no-img { cursor: default; }
 </style>
 </head>
 <body>
@@ -208,6 +397,7 @@ input { font: inherit; outline: none; }
       <span class="sub" id="charCount"></span>
       <button class="btn btn-sm" id="saveBtn">保存</button>
       <button class="btn btn-sm" id="resetBtn">重置</button>
+      <button class="btn btn-sm" id="openCoverBtn">上传</button>
       <button class="btn btn-sm primary" id="addTierBtn">+ 添加阶级</button>
     </div>
     <div class="tier-scroll" id="tierScroll">
@@ -222,11 +412,6 @@ input { font: inherit; outline: none; }
     </div>
     <div class="pool-scroll">
       <div class="faction-filters" id="filters"></div>
-      <div class="upload-zone" id="uploadZone">
-        <div class="upload-icon">+</div>
-        <div class="upload-hint">拖拽图片到此处 或 点击上传<br><span style="font-size:10px;color:var(--text2)">12角色名.png (元素=1，旷野=2，奥术=3，圣堂=4，彼岸=5，幻境=6)</span></div>
-        <input type="file" id="fileInput" accept="image/*" hidden>
-      </div>
       <div class="pool-grid" id="poolGrid"></div>
     </div>
   </div>
@@ -309,11 +494,11 @@ const CHAR_FILES = {
   "黑猫女神":"53黑猫女神.png",
 };
 const DEFAULT_TIERS = [
-  { label:"T0", color:"#FF4444" },
-  { label:"T0.5", color:"#FF8844" },
-  { label:"T1", color:"#FFCC44" },
-  { label:"T2", color:"#88CC44" },
-  { label:"T3", color:"#4488FF" }
+  { label:"T0", color:"#c8392f" },
+  { label:"T0.5", color:"#d4691a" },
+  { label:"T1", color:"#d4a84a" },
+  { label:"T2", color:"#6a8a4a" },
+  { label:"T3", color:"#3a5a6a" }
 ];
 const STORAGE_KEY = "tier_list_editor";
 
@@ -623,6 +808,21 @@ function handleFileUpload(file) {
   reader.readAsDataURL(file);
 }
 
+// 供封面生成器调用：将合成图作为自定义角色添加到角色池
+window.addCustomChar = function(name, factions, imageData) {
+  if (!name) { setStatus('请输入角色名'); return false; }
+  if (getCharFactions(name).length > 0) { setStatus('角色 "' + name + '" 已存在'); return false; }
+  customChars[name] = { factions: factions, imageData: imageData };
+  saveCustomChars();
+  save();
+  createCharImg(name);
+  updatePool();
+  updateFilters();
+  updateCharCount();
+  setStatus('已添加角色: ' + name, true);
+  return true;
+};
+
 // ===== Drop Logic =====
 function handleDrop(tierIdx, dropX) {
   if (!dragData || !dragData.name) return;
@@ -797,7 +997,7 @@ function deleteTier(idx) {
 }
 
 function addTier() {
-  const colors = ['#FF4444','#FF8844','#FFCC44','#88CC44','#4488FF','#AA66FF','#FF66AA','#66DDAA','#66AAFF','#FFAA66'];
+  const colors = ['#c8392f','#d4691a','#d4a84a','#6a8a4a','#3a5a6a','#8a5a3a','#b85a4a','#5a7a6a','#4a6a8a','#a8763a'];
   const color = colors[(state.tiers.length) % colors.length];
   const label = 'T' + (state.tiers.length + 1);
   state.tiers.push({ label, color, chars: [] });
@@ -841,6 +1041,7 @@ function setStatus(msg, isSuccess) {
     statusbar.textContent = '拖拽角色从右到左，在阶级间拖拽可移动，右键移除/添加宝具';
   }, 3000);
 }
+window.setStatus = setStatus;
 
 // ===== Init =====
 function init() {
@@ -857,31 +1058,378 @@ function init() {
   updatePool();
   updateFilters();
   updateCharCount();
-  setupUpload();
 }
 
-function setupUpload() {
-  const zone = $('uploadZone');
-  const input = $('fileInput');
-  zone.addEventListener('click', function() { input.click(); });
-  zone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
-  zone.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
-  zone.addEventListener('drop', function(e) {
-    e.preventDefault(); this.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileUpload(file);
+// ============== 词条封面生成器 ==============
+const COVER_PSD_W = 300, COVER_PSD_H = 400;
+const COVER_FACTIONS_LIST = [
+  { key:'元素', name:'元素', imgL:'ass/阵容_红左.png', imgR:'ass/阵容_红右.png', color:'#FF6B6B' },
+  { key:'旷野', name:'旷野', imgL:'ass/阵容_绿左.png', imgR:'ass/阵容_绿右.png', color:'#69DB7C' },
+  { key:'奥术', name:'奥术', imgL:'ass/阵容_蓝左.png', imgR:'ass/阵容_蓝右.png', color:'#DA77F2' },
+  { key:'圣堂', name:'圣堂', imgL:'ass/阵容_光左.png', imgR:'ass/阵容_光右.png', color:'#FFD43B' },
+  { key:'彼岸', name:'彼岸', imgL:'ass/阵容_彼岸左.png', imgR:'ass/阵容_彼岸右.png', color:'#748FFC' },
+  { key:'幻境', name:'幻境', imgL:'ass/阵容_暗左.png', imgR:'ass/阵容_暗右.png', color:'#F783AC' },
+];
+const COVER_JOBS_LIST = ['刺客','守卫','法师','牧师','战士','射手'];
+const COVER_POS = {
+  base: { src:'ass/卡片底版.png', x:0, y:0, w:300, h:400 },
+  layer4: { src:'ass/图层4.png', x:0, y:0, w:300, h:400 },
+  factionL: { x:129, y:314, w:86, h:87 },
+  factionR: { x:210, y:314, w:86, h:87 },
+  job: { x:3, y:4, w:67, h:67 },
+};
+
+const coverState = {
+  job: '守卫',
+  factions: ['', ''],
+  userImg: null,
+  imgScale: 1.0,
+  imgOffsetX: 0,
+  imgOffsetY: 0
+};
+const coverImgCache = {};
+
+function coverUpdateButtons() {
+  const hasImg = !!coverState.userImg;
+  $('coverDownloadBtn').classList.toggle('disabled', !hasImg);
+  $('coverConfirmBtn').classList.toggle('disabled', !hasImg);
+}
+
+function coverLoadImg(src) {
+  if (coverImgCache[src]) return coverImgCache[src];
+  const realSrc = (typeof ASS_IMAGES !== 'undefined' && ASS_IMAGES[src]) ? ASS_IMAGES[src] : src;
+  const p = new Promise((resolve) => {
+    const im = new Image();
+    im.onload = () => resolve(im);
+    im.onerror = () => resolve(null);
+    im.src = realSrc;
   });
-  input.addEventListener('change', function() {
-    if (this.files[0]) { handleFileUpload(this.files[0]); this.value = ''; }
+  coverImgCache[src] = p;
+  return p;
+}
+
+function coverBuildJobs() {
+  const wrap = $('coverJobs'); wrap.innerHTML = '';
+  COVER_JOBS_LIST.forEach(j => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn' + (coverState.job === j ? ' active' : '');
+    b.innerHTML = '<img src="ass/职业_' + j + '.png" onerror="this.style.opacity=0.3"><span class="lbl">' + j + '</span>';
+    b.onclick = () => { coverState.job = j; coverBuildJobs(); coverRender(); };
+    wrap.appendChild(b);
   });
+}
+
+function coverBuildFactions() {
+  const wrap = $('coverFactions'); wrap.innerHTML = '';
+  COVER_FACTIONS_LIST.forEach(f => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn faction' + (coverState.factions.includes(f.key) ? ' active' : '');
+    b.innerHTML = '<img src="' + f.imgL + '" onerror="this.style.opacity=0.3"><span class="lbl">' + f.name + '</span>';
+    b.onclick = () => {
+      const i = coverState.factions.indexOf(f.key);
+      if (i !== -1) {
+        coverState.factions[i] = '';
+      } else {
+        if (coverState.factions[0] === '') coverState.factions[0] = f.key;
+        else if (coverState.factions[1] === '') coverState.factions[1] = f.key;
+        else coverState.factions[1] = f.key;
+      }
+      coverBuildFactions();
+      coverUpdateSlotCards();
+      coverRender();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function coverUpdateSlotCards() {
+  [0, 1].forEach(i => {
+    const el = $('coverSlot' + i);
+    const f = coverState.factions[i];
+    if (f) {
+      const fac = COVER_FACTIONS_LIST.find(x => x.key === f);
+      el.classList.add('filled');
+      el.innerHTML = '<div style="text-align:center;display:flex;align-items:center;gap:6px;justify-content:center"><img src="' + fac.imgL + '" style="width:32px;height:32px;object-fit:contain"><div class="sl-name">' + fac.name + '</div></div>';
+    } else {
+      el.classList.remove('filled');
+      el.innerHTML = '<div style="text-align:center"><div class="sl-name">未选</div></div>';
+    }
+  });
+}
+
+async function coverRender() {
+  const canvas = $('coverCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, COVER_PSD_W, COVER_PSD_H);
+
+  if (coverState.userImg) {
+    const img = coverState.userImg;
+    const ar = img.width / img.height;
+    const baseSize = 300;
+    const dw = baseSize * coverState.imgScale;
+    const dh = (baseSize / ar) * coverState.imgScale;
+    const dx = (COVER_PSD_W - dw) / 2 + coverState.imgOffsetX;
+    const dy = 160 - dh/2 + coverState.imgOffsetY;
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
+
+  const base = await coverLoadImg(COVER_POS.base.src);
+  if (base) ctx.drawImage(base, 0, 0, COVER_PSD_W, COVER_PSD_H);
+
+  const layer4 = await coverLoadImg(COVER_POS.layer4.src);
+  if (layer4) ctx.drawImage(layer4, COVER_POS.layer4.x, COVER_POS.layer4.y, COVER_POS.layer4.w, COVER_POS.layer4.h);
+
+  for (let i = 0; i < 2; i++) {
+    const f = coverState.factions[i];
+    if (!f) continue;
+    const fac = COVER_FACTIONS_LIST.find(x => x.key === f);
+    const pos = (i === 0) ? COVER_POS.factionL : COVER_POS.factionR;
+    const im = await coverLoadImg(fac.imgL);
+    if (im) ctx.drawImage(im, pos.x, pos.y, pos.w, pos.h);
+  }
+
+  const jobImg = await coverLoadImg('ass/职业_' + coverState.job + '.png');
+  if (jobImg) ctx.drawImage(jobImg, COVER_POS.job.x, COVER_POS.job.y, COVER_POS.job.w, COVER_POS.job.h);
+}
+
+function coverHandleFile(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    setStatus('请上传图片文件');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const im = new Image();
+    im.onload = () => {
+      coverState.userImg = im;
+      coverUpdateButtons();
+      coverRender();
+      setStatus('图片已载入', true);
+    };
+    im.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function openCoverModal() {
+  $('coverModal').classList.add('show');
+  coverBuildJobs();
+  coverBuildFactions();
+  coverUpdateSlotCards();
+  coverUpdateButtons();
+  await coverRender();
+}
+
+let coverDownloadLastTime = 0;
+async function coverDownload() {
+  const now = Date.now();
+  if (now - coverDownloadLastTime < 1000) return;
+  coverDownloadLastTime = now;
+  
+  if (!coverState.userImg) { 
+    setStatus('请先上传图片'); 
+    return; 
+  }
+  const canvas = $('coverCanvas');
+  if (!canvas) {
+    setStatus('找不到画布');
+    return;
+  }
+  let dataUrl;
+  try { dataUrl = canvas.toDataURL('image/png'); } catch(e) { setStatus('导出失败：画布被污染，请刷新后重试'); return; }
+  const defaultName = '词条封面_' + coverState.job + '_' + (coverState.factions.filter(Boolean).join('-') || '无阵') + '.png';
+  const blob = await (await fetch(dataUrl)).blob();
+  if ('showSaveFilePicker' in window) {
+    try {
+      const handle = await window.showSaveFilePicker({ suggestedName: defaultName, types: [{ accept: { 'image/png': ['.png'] } }] });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      setStatus('已下载封面', true);
+    } catch(e) {
+      if (e.name === 'AbortError') return;
+      setStatus('下载失败：' + e.message);
+    }
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = defaultName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    setStatus('已下载封面', true);
+  }
+}
+
+function coverConfirm() {
+  if (!coverState.userImg) { 
+    setStatus('请先上传图片'); 
+    return; 
+  }
+  const factions = coverState.factions.filter(Boolean);
+  const name = coverState.job + (factions.length ? '_' + factions.join('-') : '');
+  const canvas = $('coverCanvas');
+  let imageData;
+  try { imageData = canvas.toDataURL('image/png'); } catch(e) { setStatus('导出失败：画布被污染，请刷新后重试'); return; }
+  const success = addCustomChar(name, factions, imageData);
+  if (success) {
+    try {
+      localStorage.setItem('tier_last_cover', JSON.stringify({
+        job: coverState.job,
+        factions: factions,
+        dataUrl: imageData,
+        ts: Date.now(),
+      }));
+    } catch(e) {}
+    $('coverModal').classList.remove('show');
+  } else {
+    setStatus('添加失败，请尝试其他角色名');
+  }
+}
+
+function coverInit() {
+  const canvas = $('coverCanvas');
+  const upZone = $('coverUpZone');
+  const fileInput = $('coverFileInput');
+  const zoomSlider = $('coverZoom');
+  const zoomVal = $('coverZoomVal');
+
+  $('coverClose').onclick = () => $('coverModal').classList.remove('show');
+  $('coverCancelBtn').onclick = () => $('coverModal').classList.remove('show');
+  $('coverModal').onclick = e => { if (e.target === $('coverModal')) $('coverModal').classList.remove('show'); };
+
+  $('coverDownloadBtn').onclick = coverDownload;
+  $('coverConfirmBtn').onclick = coverConfirm;
+
+  upZone.onclick = () => fileInput.click();
+  upZone.ondragover = e => { e.preventDefault(); upZone.classList.add('dragover'); };
+  upZone.ondragleave = () => upZone.classList.remove('dragover');
+  upZone.ondrop = e => {
+    e.preventDefault();
+    upZone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) coverHandleFile(f);
+  };
+  fileInput.onchange = function() {
+    if (this.files[0]) { coverHandleFile(this.files[0]); this.value = ''; }
+  };
+
+  canvas.onwheel = e => {
+    if (!coverState.userImg) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    coverState.imgScale = Math.max(0.3, Math.min(5.0, coverState.imgScale * delta));
+    zoomSlider.value = Math.round(coverState.imgScale * 100);
+    zoomVal.textContent = zoomSlider.value + '%';
+    coverRender();
+  };
+
+  let isDragging = false;
+  let dragStartX = 0, dragStartY = 0;
+  let dragStartOffsetX = 0, dragStartOffsetY = 0;
+
+  canvas.onmousedown = e => {
+    if (!coverState.userImg) return;
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragStartOffsetX = coverState.imgOffsetX;
+    dragStartOffsetY = coverState.imgOffsetY;
+    canvas.classList.add('dragging');
+  };
+
+  canvas.onmousemove = e => {
+    if (!isDragging || !coverState.userImg) return;
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    coverState.imgOffsetX = dragStartOffsetX + dx;
+    coverState.imgOffsetY = dragStartOffsetY + dy;
+    coverRender();
+  };
+
+  canvas.onmouseup = () => { isDragging = false; canvas.classList.remove('dragging'); };
+  canvas.onmouseleave = () => { isDragging = false; canvas.classList.remove('dragging'); };
+
+  zoomSlider.oninput = () => {
+    coverState.imgScale = parseInt(zoomSlider.value) / 100;
+    zoomVal.textContent = zoomSlider.value + '%';
+    coverRender();
+  };
+
+  $('coverResetBtn').onclick = () => {
+    coverState.imgScale = 1.0;
+    coverState.imgOffsetX = 0;
+    coverState.imgOffsetY = 0;
+    zoomSlider.value = 100;
+    zoomVal.textContent = '100%';
+    coverRender();
+  };
+
 }
 
 // Events
 $('addTierBtn').addEventListener('click', addTier);
 $('saveBtn').addEventListener('click', function() { save(); setStatus('已保存', true); });
 $('resetBtn').addEventListener('click', resetAll);
+$('openCoverBtn').addEventListener('click', function() { openCoverModal(); });
 
 init();
+</script>
+
+<!-- ============== 词条封面生成模态框 ============== -->
+<div class="modal-mask" id="coverModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h2>词条封面 · 生成器</h2>
+      <span class="sub"></span>
+      <div class="modal-close" id="coverClose" title="关闭">×</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-left">
+        <div class="section-label">上传图片</div>
+        <div class="up-zone" id="coverUpZone">
+          <div class="ic">⤴</div>
+          <div class="ht">拖拽图片到此处 或 点击上传</div>
+          <input type="file" id="coverFileInput" accept="image/*" hidden>
+        </div>
+
+        <div class="section-label">选择职业</div>
+        <div class="choice-grid" id="coverJobs"></div>
+
+        <div class="section-label">选择阵容</div>
+        <div class="slot-row">
+          <div class="slot-card" id="coverSlot0"><div style="text-align:center"><div class="sl-name">未选</div></div></div>
+          <div class="slot-card" id="coverSlot1"><div style="text-align:center"><div class="sl-name">未选</div></div></div>
+        </div>
+        <div class="choice-grid cols-7" id="coverFactions" style="margin-top:8px"></div>
+      </div>
+      <div class="modal-right">
+        <div class="preview-frame">
+          <canvas class="preview-canvas" id="coverCanvas" width="300" height="400"></canvas>
+        </div>
+        <div class="zoom-row">
+          <label>缩放</label>
+          <input type="range" class="zoom-slider" id="coverZoom" min="30" max="500" value="100">
+          <span class="zoom-val" id="coverZoomVal">100%</span>
+          <span class="reset-btn" id="coverResetBtn">重置</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="hint" id="coverHint">选择职业、阵容并上传图片后预览</span>
+      <button class="btn" id="coverCancelBtn">取消</button>
+      <button class="btn" id="coverDownloadBtn">下载</button>
+      <button class="btn primary" id="coverConfirmBtn">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.coverDoDownload = coverDownload;
+window.coverDoConfirm = coverConfirm;
+
+coverInit();
 </script>
 </body>
 </html>
